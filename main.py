@@ -8,6 +8,7 @@ import logging
 import random
 
 import smtplib
+from pypushdeer import PushDeer
 from email.mime.text import MIMEText
 
 
@@ -173,6 +174,7 @@ def client_sign(bduss, tbs, fid, kw):
     res = s.post(url=SIGN_URL, data=data, timeout=5).json()
     return res
 
+
 def send_email(sign_list):
     if ('HOST' not in ENV or 'FROM' not in ENV or 'TO' not in ENV or 'AUTH' not in ENV):
         logger.error("未配置邮箱")
@@ -211,6 +213,21 @@ def send_email(sign_list):
     smtp.sendmail(FROM, TO, msg.as_string())
     smtp.quit()
 
+
+def send_alert(sign_list):
+    if ('PUSH_HOST' not in ENV or 'PUSH_KEY' not in ENV):
+        logger.error("未配置 PushDeer")
+        return
+    pushdeer = PushDeer(server=ENV['PUSH_HOST'], pushkey=ENV['PUSH_KEY'])
+    text = ""
+    for i in sign_list:
+        text += f"""
+        贴吧名称: { i['name'] }
+        贴吧简介: { i['slogan'] }
+        """
+    pushdeer.send_text("百度贴吧签到", desp=text)
+
+
 def main():
     if ('BDUSS' not in ENV):
         logger.error("未配置BDUSS")
@@ -224,7 +241,8 @@ def main():
             time.sleep(random.randint(1,5))
             client_sign(i, tbs, j["id"], j["name"])
         logger.info("完成第" + str(n) + "个用户签到")
-    send_email(favorites)
+    # send_email(favorites)
+    send_alert(favorites)
     logger.info("所有用户签到结束")
 
 
