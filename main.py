@@ -225,7 +225,7 @@ def send_alert(sign_list):
         贴吧名称: { i['name'] }
         贴吧简介: { i['slogan'] }
         """
-    pushdeer.send_text("百度贴吧签到", desp=text)
+    pushdeer.send_text("百度贴吧签到", desp="签到成功")
 
 
 def main():
